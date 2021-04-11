@@ -1,0 +1,63 @@
+%!PS
+
+% Font
+/fontsize 12 def
+/Courier fontsize selectfont
+
+% Page Dimensions
+/page_top { 11 72 mul } bind def
+/page_width { 8.5 72.0 mul } bind def
+/page_mid { page_width 2.0 div } bind def
+
+% Margins
+/margin_left { 1.5 72.0 mul } bind def
+/margin_top 72 def
+/margin_right { 1.0 72.0 mul page_width exch sub } bind def
+
+% Position in Page
+/hpos margin_left def
+/vpos { page_top margin_top sub } bind def
+
+% Alignment
+/align_left { /hpos margin_left def } bind def
+/align_start { align_left
+	page_top margin_top sub
+	/vpos exch def } bind def
+/align_center { /hpos page_mid def } bind def
+/align_right { /hpos margin_right def } bind def
+/align_dialogue { 1.0 72.0 mul margin_left add
+	/hpos exch def } bind def
+
+% Text Printing
+/print_left { align_left
+	hpos vpos moveto
+	show } bind def
+/print_center { dup
+	stringwidth pop 2.0 div
+	page_mid exch sub
+	/hpos exch def
+	hpos vpos moveto
+	show } bind def
+/print_right { align_right
+	dup
+	stringwidth pop
+	hpos exch sub
+	/hpos exch def
+	hpos vpos moveto
+	show } bind def
+/print_dialogue { align_dialogue
+	hpos vpos moveto
+	show } bind def
+/print_title { dup
+	stringwidth exch pop 2.0 div
+	page_top 2.0 div
+	exch sub
+	/vpos exch def
+	align_center
+	print_center } bind def
+
+% Newline
+/newline { vpos fontsize sub
+	/vpos exch def } bind def
+
+% Screenplay Begin
