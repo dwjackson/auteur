@@ -1,6 +1,6 @@
 EXE_NAME = auteur
 CC = gcc
-CFLAGS = -g -O2
+CFLAGS = -g -O2 -Wall -Wextra
 
 SRC_FILES = auteur.c
 OBJ_FILES = $(SRC_FILES:.c=.o)

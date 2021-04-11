@@ -9,10 +9,14 @@
 #define LINE_BUFSIZE_MIN 80
 
 #define CHAR_WIDTH 7.1979
+#define LINE_HEIGHT 12.0
 #define POINTS_PER_INCH 72.0
 #define PAGE_WIDTH (8.5 * POINTS_PER_INCH)
+#define PAGE_HEIGHT (11 * POINTS_PER_INCH)
 #define MARGIN_LEFT (1.5 * POINTS_PER_INCH)
 #define MARGIN_RIGHT (1.0 * POINTS_PER_INCH)
+#define MARGIN_TOP POINTS_PER_INCH
+#define MARGIN_BOTTOM MARGIN_TOP
 #define LINE_MAX_WIDTH (PAGE_WIDTH - MARGIN_LEFT - MARGIN_RIGHT)
 #define DIALOG_MAX_WIDTH (LINE_MAX_WIDTH - 2.0 * POINTS_PER_INCH)
 
@@ -42,16 +46,37 @@ enum script_feature {
 
 static void fatal(const char *message);
 static char *read_line(FILE *fp);
-static void convert_line(char *line);
+static void convert_line(char *line, double *vpos_ptr);
 static size_t next_word(const char *line, size_t start);
 static bool starts_with(const char *haystack, const char *needle);
 static void capitalize(char *s);
+
+static void vpos_reset(double *vpos_ptr)
+{
+	*vpos_ptr = PAGE_HEIGHT - MARGIN_TOP;
+}
+
+static void newline(double *vpos_ptr)
+{
+	*vpos_ptr -= LINE_HEIGHT;
+	if (*vpos_ptr >= MARGIN_BOTTOM) {
+		printf("newline\n");
+	} else {
+		/* We are at the end of the page */
+		printf("showpage\n");
+		printf("align_start\n");
+		vpos_reset(vpos_ptr);
+	}
+}
 
 int main(int argc, char* argv[])
 {
 	char *file_name = NULL;
 	FILE *fp = stdin;
 	char *line;
+	double vpos;
+
+	vpos_reset(&vpos);
 
 	if (argc > 1) {
 		file_name = argv[1];
@@ -64,7 +89,7 @@ int main(int argc, char* argv[])
 	while (!feof(fp)) {
 		line = read_line(fp);
 		if (line != NULL) {
-			convert_line(line);
+			convert_line(line, &vpos);
 			free(line);
 		}
 	}
@@ -113,7 +138,7 @@ static char *read_line(FILE *fp)
 	return line;
 }
 
-static void convert_line(char *line)
+static void convert_line(char *line, double *vpos_ptr)
 {
 	size_t len = strlen(line);
 	size_t word_len;
@@ -185,8 +210,10 @@ static void convert_line(char *line)
 			line_max_width = DIALOG_MAX_WIDTH;
 		}
 		if (hpos + word_width >= line_max_width) {
-			printf(") %s\nnewline\n(", print_func);
+			printf(") %s\n", print_func);
+			newline(vpos_ptr);
 			hpos = 0.0;
+			putchar('(');
 		}
 		if (hpos > 0.0) {
 			putchar(' ');
@@ -204,9 +231,10 @@ static void convert_line(char *line)
 		putchar(')');
 	}
 	
-	printf(") %s\nnewline\n", print_func);
+	printf(") %s\n", print_func);
+	newline(vpos_ptr);
 	if (feature != F_CHARACTER) {
-		printf("newline\n");
+		newline(vpos_ptr);
 	}
 }
 
