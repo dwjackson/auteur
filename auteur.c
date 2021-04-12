@@ -47,6 +47,7 @@ enum script_feature {
 struct position {
 	double hpos;
 	double vpos;
+	int page_num;
 };
 
 static void fatal(const char *message);
@@ -56,7 +57,7 @@ static size_t next_word(const char *line, size_t start);
 static bool starts_with(const char *haystack, const char *needle);
 static void capitalize(char *s);
 
-static void pos_reset(struct position *pos_ptr)
+static void pos_reset_vpos(struct position *pos_ptr)
 {
 	pos_ptr->vpos = PAGE_HEIGHT - MARGIN_TOP;
 }
@@ -68,9 +69,14 @@ static void newline(struct position *pos_ptr)
 		printf("newline\n");
 	} else {
 		/* We are at the end of the page */
+		pos_reset_vpos(pos_ptr);
+		pos_ptr->page_num++;
+
 		printf("showpage\n");
+		if (pos_ptr->page_num > 1) {
+			printf("(%d.) print_page_number\n", pos_ptr->page_num);
+		}
 		printf("align_start\n");
-		pos_reset(pos_ptr);
 	}
 }
 
@@ -81,7 +87,8 @@ int main(int argc, char* argv[])
 	char *line;
 	struct position pos;
 
-	pos_reset(&pos);
+	pos.page_num = 1;
+	pos_reset_vpos(&pos);
 
 	if (argc > 1) {
 		file_name = argv[1];

@@ -55,6 +55,14 @@
 	/vpos exch def
 	align_center
 	print_center } bind def
+/print_page_number { dup
+	stringwidth pop
+	page_width exch sub
+	/hpos exch def
+	0.5 72.0 mul page_top exch sub
+	/vpos exch def
+	hpos vpos moveto
+	show } bind def
 
 % Newline
 /newline { vpos fontsize sub
