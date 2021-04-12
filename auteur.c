@@ -52,6 +52,7 @@ struct position {
 
 struct parser {
 	struct position pos;
+	enum script_feature feat;
 };
 
 static void fatal(const char *message);
@@ -98,6 +99,7 @@ int main(int argc, char* argv[])
 
 	parser.pos.page_num = 1;
 	parser_reset_vpos(&parser);
+	parser.feat = F_NONE;
 
 	if (argc > 1) {
 		file_name = argv[1];
@@ -167,37 +169,36 @@ static void convert_line(char *line, struct parser *parser)
 	double word_width;
 	size_t i;
 	char *print_func;
-	enum script_feature feature;
 	double line_max_width;
 
 	parser_reset_hpos(parser);
 
 	if (starts_with(line, D_TITLE)) {
-		feature = F_TITLE;
+		parser->feat = F_TITLE;
 		print_func = "print_title";
 	} else if (starts_with(line, D_AUTHOR)) {
-		feature = F_AUTHOR;
+		parser->feat = F_AUTHOR;
 		print_func = "print_center";
 	} else if (starts_with(line, D_SLUG)) {
-		feature = F_SLUG;
+		parser->feat = F_SLUG;
 		capitalize(line);
 		print_func = "print_left";
 	} else if (starts_with(line, D_ACTION)) {
-		feature = F_ACTION;
+		parser->feat = F_ACTION;
 		print_func = "print_left";
 	} else if (starts_with(line, D_TRANSITION)) {
-		feature = F_TRANSITION;
+		parser->feat = F_TRANSITION;
 		capitalize(line);
 		print_func = "print_right";
 	} else if (starts_with(line, D_CHARACTER)) {
-		feature = F_CHARACTER;
+		parser->feat = F_CHARACTER;
 		capitalize(line);
 		print_func = "print_center";
 	} else if (starts_with(line, D_PARENTHETICAL)) {
-		feature = F_PARENTHETICAL;
+		parser->feat = F_PARENTHETICAL;
 		print_func = "print_center";
 	} else if (starts_with(line, D_DIALOGUE)) {
-		feature = F_DIALOGUE;
+		parser->feat = F_DIALOGUE;
 		print_func = "print_dialogue";
 	} else if (starts_with(line, D_NEW_PAGE)) {
 		printf("showpage\n");
@@ -209,11 +210,11 @@ static void convert_line(char *line, struct parser *parser)
 		}
 		return;
 	} else {
-		feature = F_NONE;
+		parser->feat = F_NONE;
 		print_func = "print_left";
 	}
 
-	if (feature != F_NONE) {
+	if (parser->feat != F_NONE) {
 		line += 4;
 		len -= 4;
 	}
@@ -224,7 +225,7 @@ static void convert_line(char *line, struct parser *parser)
 
 	putchar('(');
 
-	if (feature == F_PARENTHETICAL) {
+	if (parser->feat == F_PARENTHETICAL) {
 		putchar('(');
 	}
 
@@ -232,7 +233,7 @@ static void convert_line(char *line, struct parser *parser)
 	while ((word_len = next_word(line, start)) != 0 && start < len) {
 		word_width = word_len * CHAR_WIDTH;
 		line_max_width = LINE_MAX_WIDTH;
-		if (feature == F_DIALOGUE) {
+		if (parser->feat == F_DIALOGUE) {
 			line_max_width = DIALOG_MAX_WIDTH;
 		}
 		if (parser->pos.hpos + word_width >= line_max_width) {
@@ -251,15 +252,15 @@ static void convert_line(char *line, struct parser *parser)
 		start += word_len + 1;
 		parser->pos.hpos += word_width;
 	}
-	if (feature == F_TRANSITION) {
+	if (parser->feat == F_TRANSITION) {
 		putchar(':');
-	} else if (feature == F_PARENTHETICAL) {
+	} else if (parser->feat == F_PARENTHETICAL) {
 		putchar(')');
 	}
 	
 	printf(") %s\n", print_func);
 	newline(parser);
-	if (feature != F_CHARACTER) {
+	if (parser->feat != F_CHARACTER) {
 		newline(parser);
 	}
 }
