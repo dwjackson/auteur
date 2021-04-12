@@ -209,6 +209,10 @@ static void convert_line(char *line, struct position *pos_ptr)
 		len -= 4;
 	}
 
+	if (pos_ptr->vpos - LINE_HEIGHT < MARGIN_BOTTOM) {
+		newline(pos_ptr);
+	}
+
 	putchar('(');
 
 	if (feature == F_PARENTHETICAL) {
