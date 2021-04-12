@@ -90,6 +90,12 @@ static void newline(struct parser *parser)
 	}
 }
 
+static void manual_page_break()
+{
+	printf("showpage\n");
+	printf("align_start\n");
+}
+
 int main(int argc, char* argv[])
 {
 	char *file_name = NULL;
@@ -201,8 +207,7 @@ static void convert_line(char *line, struct parser *parser)
 		parser->feat = F_DIALOGUE;
 		print_func = "print_dialogue";
 	} else if (starts_with(line, D_NEW_PAGE)) {
-		printf("showpage\n");
-		printf("align_start\n");
+		manual_page_break();
 		return;
 	} else if (starts_with(line, D_COMMENT)) {
 		while (!isspace(line[start]) && line[start] != '\0') {
