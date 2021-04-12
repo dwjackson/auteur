@@ -44,28 +44,33 @@ enum script_feature {
 	F_DIALOGUE
 };
 
+struct position {
+	double hpos;
+	double vpos;
+};
+
 static void fatal(const char *message);
 static char *read_line(FILE *fp);
-static void convert_line(char *line, double *vpos_ptr);
+static void convert_line(char *line, struct position *pos_ptr);
 static size_t next_word(const char *line, size_t start);
 static bool starts_with(const char *haystack, const char *needle);
 static void capitalize(char *s);
 
-static void vpos_reset(double *vpos_ptr)
+static void pos_reset(struct position *pos_ptr)
 {
-	*vpos_ptr = PAGE_HEIGHT - MARGIN_TOP;
+	pos_ptr->vpos = PAGE_HEIGHT - MARGIN_TOP;
 }
 
-static void newline(double *vpos_ptr)
+static void newline(struct position *pos_ptr)
 {
-	*vpos_ptr -= LINE_HEIGHT;
-	if (*vpos_ptr >= MARGIN_BOTTOM) {
+	pos_ptr->vpos -= LINE_HEIGHT;
+	if (pos_ptr->vpos >= MARGIN_BOTTOM) {
 		printf("newline\n");
 	} else {
 		/* We are at the end of the page */
 		printf("showpage\n");
 		printf("align_start\n");
-		vpos_reset(vpos_ptr);
+		pos_reset(pos_ptr);
 	}
 }
 
@@ -74,9 +79,9 @@ int main(int argc, char* argv[])
 	char *file_name = NULL;
 	FILE *fp = stdin;
 	char *line;
-	double vpos;
+	struct position pos;
 
-	vpos_reset(&vpos);
+	pos_reset(&pos);
 
 	if (argc > 1) {
 		file_name = argv[1];
@@ -89,7 +94,7 @@ int main(int argc, char* argv[])
 	while (!feof(fp)) {
 		line = read_line(fp);
 		if (line != NULL) {
-			convert_line(line, &vpos);
+			convert_line(line, &pos);
 			free(line);
 		}
 	}
@@ -138,17 +143,18 @@ static char *read_line(FILE *fp)
 	return line;
 }
 
-static void convert_line(char *line, double *vpos_ptr)
+static void convert_line(char *line, struct position *pos_ptr)
 {
 	size_t len = strlen(line);
 	size_t word_len;
 	size_t start = 0;
-	double hpos = 0.0; /* Horizontal position */
 	double word_width;
 	size_t i;
 	char *print_func;
 	enum script_feature feature;
 	double line_max_width;
+
+	pos_ptr->hpos = 0.0;
 
 	if (starts_with(line, D_TITLE)) {
 		feature = F_TITLE;
@@ -209,21 +215,21 @@ static void convert_line(char *line, double *vpos_ptr)
 		if (feature == F_DIALOGUE) {
 			line_max_width = DIALOG_MAX_WIDTH;
 		}
-		if (hpos + word_width >= line_max_width) {
+		if (pos_ptr->hpos + word_width >= line_max_width) {
 			printf(") %s\n", print_func);
-			newline(vpos_ptr);
-			hpos = 0.0;
+			newline(pos_ptr);
+			pos_ptr->hpos = 0.0;
 			putchar('(');
 		}
-		if (hpos > 0.0) {
+		if (pos_ptr->hpos > 0.0) {
 			putchar(' ');
-			hpos += CHAR_WIDTH;
+			pos_ptr->hpos += CHAR_WIDTH;
 		}
 		for (i = start; i < start + word_len; i++) {
 			putchar(line[i]);
 		}
 		start += word_len + 1;
-		hpos += word_width;
+		pos_ptr->hpos += word_width;
 	}
 	if (feature == F_TRANSITION) {
 		putchar(':');
@@ -232,9 +238,9 @@ static void convert_line(char *line, double *vpos_ptr)
 	}
 	
 	printf(") %s\n", print_func);
-	newline(vpos_ptr);
+	newline(pos_ptr);
 	if (feature != F_CHARACTER) {
-		newline(vpos_ptr);
+		newline(pos_ptr);
 	}
 }
 
