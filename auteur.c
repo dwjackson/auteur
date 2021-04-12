@@ -50,31 +50,40 @@ struct position {
 	int page_num;
 };
 
+struct parser {
+	struct position pos;
+};
+
 static void fatal(const char *message);
 static char *read_line(FILE *fp);
-static void convert_line(char *line, struct position *pos_ptr);
+static void convert_line(char *line, struct parser *parser);
 static size_t next_word(const char *line, size_t start);
 static bool starts_with(const char *haystack, const char *needle);
 static void capitalize(char *s);
 
-static void pos_reset_vpos(struct position *pos_ptr)
+static void parser_reset_vpos(struct parser *parser)
 {
-	pos_ptr->vpos = PAGE_HEIGHT - MARGIN_TOP;
+	parser->pos.vpos = PAGE_HEIGHT - MARGIN_TOP;
 }
 
-static void newline(struct position *pos_ptr)
+static void parser_reset_hpos(struct parser *parser)
 {
-	pos_ptr->vpos -= LINE_HEIGHT;
-	if (pos_ptr->vpos >= MARGIN_BOTTOM) {
+	parser->pos.hpos = 0.0;
+}
+
+static void newline(struct parser *parser)
+{
+	parser->pos.vpos -= LINE_HEIGHT;
+	if (parser->pos.vpos >= MARGIN_BOTTOM) {
 		printf("newline\n");
 	} else {
 		/* We are at the end of the page */
-		pos_reset_vpos(pos_ptr);
-		pos_ptr->page_num++;
+		parser_reset_vpos(parser);
+		parser->pos.page_num++;
 
 		printf("showpage\n");
-		if (pos_ptr->page_num > 1) {
-			printf("(%d.) print_page_number\n", pos_ptr->page_num);
+		if (parser->pos.page_num > 1) {
+			printf("(%d.) print_page_number\n", parser->pos.page_num);
 		}
 		printf("align_start\n");
 	}
@@ -85,10 +94,10 @@ int main(int argc, char* argv[])
 	char *file_name = NULL;
 	FILE *fp = stdin;
 	char *line;
-	struct position pos;
+	struct parser parser;
 
-	pos.page_num = 1;
-	pos_reset_vpos(&pos);
+	parser.pos.page_num = 1;
+	parser_reset_vpos(&parser);
 
 	if (argc > 1) {
 		file_name = argv[1];
@@ -101,7 +110,7 @@ int main(int argc, char* argv[])
 	while (!feof(fp)) {
 		line = read_line(fp);
 		if (line != NULL) {
-			convert_line(line, &pos);
+			convert_line(line, &parser);
 			free(line);
 		}
 	}
@@ -150,7 +159,7 @@ static char *read_line(FILE *fp)
 	return line;
 }
 
-static void convert_line(char *line, struct position *pos_ptr)
+static void convert_line(char *line, struct parser *parser)
 {
 	size_t len = strlen(line);
 	size_t word_len;
@@ -161,7 +170,7 @@ static void convert_line(char *line, struct position *pos_ptr)
 	enum script_feature feature;
 	double line_max_width;
 
-	pos_ptr->hpos = 0.0;
+	parser_reset_hpos(parser);
 
 	if (starts_with(line, D_TITLE)) {
 		feature = F_TITLE;
@@ -209,8 +218,8 @@ static void convert_line(char *line, struct position *pos_ptr)
 		len -= 4;
 	}
 
-	if (pos_ptr->vpos - LINE_HEIGHT < MARGIN_BOTTOM) {
-		newline(pos_ptr);
+	if (parser->pos.vpos - LINE_HEIGHT < MARGIN_BOTTOM) {
+		newline(parser);
 	}
 
 	putchar('(');
@@ -226,21 +235,21 @@ static void convert_line(char *line, struct position *pos_ptr)
 		if (feature == F_DIALOGUE) {
 			line_max_width = DIALOG_MAX_WIDTH;
 		}
-		if (pos_ptr->hpos + word_width >= line_max_width) {
+		if (parser->pos.hpos + word_width >= line_max_width) {
 			printf(") %s\n", print_func);
-			newline(pos_ptr);
-			pos_ptr->hpos = 0.0;
+			newline(parser);
+			parser_reset_hpos(parser);
 			putchar('(');
 		}
-		if (pos_ptr->hpos > 0.0) {
+		if (parser->pos.hpos > 0.0) {
 			putchar(' ');
-			pos_ptr->hpos += CHAR_WIDTH;
+			parser->pos.hpos += CHAR_WIDTH;
 		}
 		for (i = start; i < start + word_len; i++) {
 			putchar(line[i]);
 		}
 		start += word_len + 1;
-		pos_ptr->hpos += word_width;
+		parser->pos.hpos += word_width;
 	}
 	if (feature == F_TRANSITION) {
 		putchar(':');
@@ -249,9 +258,9 @@ static void convert_line(char *line, struct position *pos_ptr)
 	}
 	
 	printf(") %s\n", print_func);
-	newline(pos_ptr);
+	newline(parser);
 	if (feature != F_CHARACTER) {
-		newline(pos_ptr);
+		newline(parser);
 	}
 }
 
