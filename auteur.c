@@ -16,12 +16,7 @@ static void convert_line(char *line, struct parser *parser);
 static size_t next_word(const char *line, size_t start);
 static bool starts_with(const char *haystack, const char *needle);
 static void capitalize(char *s);
-
-static void manual_page_break()
-{
-	printf("showpage\n");
-	printf("align_start\n");
-}
+static void manual_page_break();
 
 int main(int argc, char* argv[])
 {
@@ -217,4 +212,10 @@ static void capitalize(char *s)
 	while ((*s) != '\0') {
 		*s++ = toupper(*s);
 	}
+}
+
+static void manual_page_break()
+{
+	printf("showpage\n");
+	printf("align_start\n");
 }
