@@ -141,9 +141,17 @@ static void convert_line(char *line, struct parser *parser)
 		print_func = "print_left";
 	}
 
+	if (len <= DIRECTIVE_LEN) {
+		return;
+	}
+
 	if (parser->feat != F_NONE) {
-		line += 4;
-		len -= 4;
+		line += DIRECTIVE_LEN ;
+		len -= DIRECTIVE_LEN;
+	}
+	while (isspace(*line) && *line != '\0') {
+		line++;
+		len--;
 	}
 
 	if (parser->pos.vpos - LINE_HEIGHT < MARGIN_BOTTOM) {

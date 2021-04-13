@@ -2,16 +2,17 @@
 #define PARSER_H
 
 /* Directives */
-#define D_TITLE ".Tl "
-#define D_AUTHOR ".Au "
-#define D_SLUG ".Sl "
-#define D_ACTION ".Ac "
-#define D_TRANSITION ".Tr "
-#define D_CHARACTER ".Ch "
-#define D_PARENTHETICAL ".Pa "
-#define D_DIALOGUE ".Dl "
+#define DIRECTIVE_LEN 3
+#define D_TITLE ".Tl"
+#define D_AUTHOR ".Au"
+#define D_SLUG ".Sl"
+#define D_ACTION ".Ac"
+#define D_TRANSITION ".Tr"
+#define D_CHARACTER ".Ch"
+#define D_PARENTHETICAL ".Pa"
+#define D_DIALOGUE ".Dl"
 #define D_NEW_PAGE ".Np"
-#define D_COMMENT ".%"
+#define D_COMMENT ".\\%"
 
 enum script_feature {
 	F_NONE,
