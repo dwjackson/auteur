@@ -10,6 +10,13 @@
 
 #define LINE_BUFSIZE_MIN 80
 
+/* Print Functions */
+#define PRINT_LEFT "print_left"
+#define PRINT_RIGHT "print_right"
+#define PRINT_CENTER "print_center"
+#define PRINT_TITLE "print_title"
+#define PRINT_DIALOGUE "print_dialogue"
+
 static void fatal(const char *message);
 static char *read_line(FILE *fp);
 static void convert_line(char *line, struct parser *parser);
@@ -96,38 +103,38 @@ static void convert_line(char *line, struct parser *parser)
 	size_t start = 0;
 	double word_width;
 	size_t i;
-	char *print_func;
+	const char *print_func;
 	double line_max_width;
 
 	parser_reset_hpos(parser);
 
 	if (starts_with(line, D_TITLE)) {
 		parser->feat = F_TITLE;
-		print_func = "print_title";
+		print_func = PRINT_TITLE;
 	} else if (starts_with(line, D_AUTHOR)) {
 		parser->feat = F_AUTHOR;
-		print_func = "print_center";
+		print_func = PRINT_CENTER;
 	} else if (starts_with(line, D_SLUG)) {
 		parser->feat = F_SLUG;
 		capitalize(line);
-		print_func = "print_left";
+		print_func = PRINT_LEFT;
 	} else if (starts_with(line, D_ACTION)) {
 		parser->feat = F_ACTION;
-		print_func = "print_left";
+		print_func = PRINT_LEFT;
 	} else if (starts_with(line, D_TRANSITION)) {
 		parser->feat = F_TRANSITION;
 		capitalize(line);
-		print_func = "print_right";
+		print_func = PRINT_RIGHT;
 	} else if (starts_with(line, D_CHARACTER)) {
 		parser->feat = F_CHARACTER;
 		capitalize(line);
-		print_func = "print_center";
+		print_func = PRINT_CENTER;
 	} else if (starts_with(line, D_PARENTHETICAL)) {
 		parser->feat = F_PARENTHETICAL;
-		print_func = "print_center";
+		print_func = PRINT_CENTER;
 	} else if (starts_with(line, D_DIALOGUE)) {
 		parser->feat = F_DIALOGUE;
-		print_func = "print_dialogue";
+		print_func = PRINT_DIALOGUE;
 	} else if (starts_with(line, D_NEW_PAGE)) {
 		manual_page_break();
 		return;
@@ -138,7 +145,7 @@ static void convert_line(char *line, struct parser *parser)
 		return;
 	} else {
 		parser->feat = F_NONE;
-		print_func = "print_left";
+		print_func = PRINT_LEFT;
 	}
 
 	if (len <= DIRECTIVE_LEN) {
