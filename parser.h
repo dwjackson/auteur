@@ -35,6 +35,7 @@ struct position {
 struct parser {
 	struct position pos;
 	enum script_feature feat;
+	const char *print_func;
 };
 
 void parser_reset_vpos(struct parser *parser);

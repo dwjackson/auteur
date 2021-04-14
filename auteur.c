@@ -19,7 +19,8 @@
 
 static void fatal(const char *message);
 static char *read_line(FILE *fp);
-static void convert_line(char *line, struct parser *parser);
+static char *parse_directive(char *line, size_t *line_len, struct parser *parser);
+static void convert_line(char *line, size_t line_len, struct parser *parser);
 static size_t next_word(const char *line, size_t start);
 static bool starts_with(const char *haystack, const char *needle);
 static void capitalize(char *s);
@@ -31,10 +32,13 @@ int main(int argc, char* argv[])
 	FILE *fp = stdin;
 	char *line;
 	struct parser parser;
+	size_t line_len;
+	char *to_convert;
 
 	parser.pos.page_num = 1;
 	parser_reset_vpos(&parser);
 	parser.feat = F_NONE;
+	parser.print_func = PRINT_LEFT;
 
 	if (argc > 1) {
 		file_name = argv[1];
@@ -47,7 +51,9 @@ int main(int argc, char* argv[])
 	while (!feof(fp)) {
 		line = read_line(fp);
 		if (line != NULL) {
-			convert_line(line, &parser);
+			line_len = strlen(line);
+			to_convert = parse_directive(line, &line_len, &parser);
+			convert_line(to_convert, line_len, &parser);
 			free(line);
 		}
 	}
@@ -96,17 +102,9 @@ static char *read_line(FILE *fp)
 	return line;
 }
 
-static void convert_line(char *line, struct parser *parser)
+static char *parse_directive(char *line, size_t *len, struct parser *parser)
 {
-	size_t len = strlen(line);
-	size_t word_len;
-	size_t start = 0;
-	double word_width;
-	size_t i;
 	const char *print_func;
-	double line_max_width;
-
-	parser_reset_hpos(parser);
 
 	if (starts_with(line, D_TITLE)) {
 		parser->feat = F_TITLE;
@@ -137,29 +135,50 @@ static void convert_line(char *line, struct parser *parser)
 		print_func = PRINT_DIALOGUE;
 	} else if (starts_with(line, D_NEW_PAGE)) {
 		manual_page_break();
-		return;
+		*len = 0;
+		return NULL;
 	} else if (starts_with(line, D_COMMENT)) {
-		while (!isspace(line[start]) && line[start] != '\0') {
-			start++;
+		while (*line != '\0') {
+			line++;
+			*len -= 1;
 		}
-		return;
+		print_func = parser->print_func;
 	} else {
 		parser->feat = F_NONE;
-		print_func = PRINT_LEFT;
+		print_func = parser->print_func;
 	}
 
-	if (len <= DIRECTIVE_LEN) {
-		return;
+	parser->print_func = print_func;
+
+	if (*len < DIRECTIVE_LEN) {
+		return line;
 	}
 
 	if (parser->feat != F_NONE) {
 		line += DIRECTIVE_LEN ;
-		len -= DIRECTIVE_LEN;
+		*len -= DIRECTIVE_LEN;
 	}
 	while (isspace(*line) && *line != '\0') {
 		line++;
-		len--;
+		*len = *len - 1;
 	}
+
+	return line;
+}
+
+static void convert_line(char *line, size_t len, struct parser *parser)
+{
+	size_t word_len;
+	size_t start = 0;
+	double word_width;
+	size_t i;
+	double line_max_width;
+
+	if (len == 0) {
+		return;
+	}
+
+	parser_reset_hpos(parser);	
 
 	if (parser->pos.vpos - LINE_HEIGHT < MARGIN_BOTTOM) {
 		parser_newline(parser);
@@ -179,7 +198,7 @@ static void convert_line(char *line, struct parser *parser)
 			line_max_width = DIALOG_MAX_WIDTH;
 		}
 		if (parser->pos.hpos + word_width >= line_max_width) {
-			printf(") %s\n", print_func);
+			printf(") %s\n", parser->print_func);
 			parser_newline(parser);
 			parser_reset_hpos(parser);
 			putchar('(');
@@ -200,7 +219,7 @@ static void convert_line(char *line, struct parser *parser)
 		putchar(')');
 	}
 	
-	printf(") %s\n", print_func);
+	printf(") %s\n", parser->print_func);
 	parser_newline(parser);
 	if (parser->feat != F_CHARACTER) {
 		parser_newline(parser);
