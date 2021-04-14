@@ -3,9 +3,11 @@
 
 #include <stdio.h>
 
+#define TOP_OF_PAGE (PAGE_HEIGHT - MARGIN_TOP)
+
 void parser_reset_vpos(struct parser *parser)
 {
-	parser->pos.vpos = PAGE_HEIGHT - MARGIN_TOP;
+	parser->pos.vpos = TOP_OF_PAGE;
 }
 
 void parser_reset_hpos(struct parser *parser)
