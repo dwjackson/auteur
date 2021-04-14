@@ -14,7 +14,7 @@
 #define D_NEW_PAGE ".Np"
 #define D_COMMENT ".\\%"
 
-enum script_feature {
+enum script_feature_type {
 	F_NONE,
 	F_TITLE,
 	F_AUTHOR,
@@ -34,7 +34,7 @@ struct position {
 
 struct parser {
 	struct position pos;
-	enum script_feature feat;
+	enum script_feature_type feat;
 	const char *print_func;
 };
 
