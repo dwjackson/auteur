@@ -8,6 +8,4 @@
 #define PRINT_TITLE "print_title"
 #define PRINT_DIALOGUE "print_dialogue"
 
-const char *auteur_postscript();
-
 #endif /* AUTEUR_POSTSCRIPT_H */

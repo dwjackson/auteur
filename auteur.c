@@ -19,6 +19,8 @@ static bool starts_with(const char *haystack, const char *needle);
 static void capitalize(char *s);
 static void manual_page_break();
 
+extern const char auteur_postscript[];
+
 int main(int argc, char* argv[])
 {
 	char *file_name = NULL;
@@ -37,7 +39,7 @@ int main(int argc, char* argv[])
 			fatal(file_name);
 		}
 	}
-	printf("%s\n", auteur_postscript());
+	printf("%s\n", auteur_postscript);
 	while (!feof(fp)) {
 		line = read_line(fp);
 		if (line != NULL) {
