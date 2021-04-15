@@ -1,9 +1,18 @@
 #include "parser.h"
 #include "dimensions.h"
+#include "auteur_postscript.h"
 
 #include <stdio.h>
 
 #define TOP_OF_PAGE (PAGE_HEIGHT - MARGIN_TOP)
+
+void parser_init(struct parser *parser)
+{
+	parser->pos.page_num = 1;
+	parser_reset_vpos(parser);
+	parser->feat = F_NONE;
+	parser->print_func = PRINT_LEFT;
+}
 
 void parser_reset_vpos(struct parser *parser)
 {

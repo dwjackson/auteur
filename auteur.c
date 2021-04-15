@@ -10,13 +10,6 @@
 
 #define LINE_BUFSIZE_MIN 80
 
-/* Print Functions */
-#define PRINT_LEFT "print_left"
-#define PRINT_RIGHT "print_right"
-#define PRINT_CENTER "print_center"
-#define PRINT_TITLE "print_title"
-#define PRINT_DIALOGUE "print_dialogue"
-
 static void fatal(const char *message);
 static char *read_line(FILE *fp);
 static char *parse_directive(char *line, size_t *line_len, struct parser *parser);
@@ -35,10 +28,7 @@ int main(int argc, char* argv[])
 	size_t line_len;
 	char *to_convert;
 
-	parser.pos.page_num = 1;
-	parser_reset_vpos(&parser);
-	parser.feat = F_NONE;
-	parser.print_func = PRINT_LEFT;
+	parser_init(&parser);
 
 	if (argc > 1) {
 		file_name = argv[1];
@@ -47,7 +37,7 @@ int main(int argc, char* argv[])
 			fatal(file_name);
 		}
 	}
-	printf("%s\n", auteur_postscript);
+	printf("%s\n", auteur_postscript());
 	while (!feof(fp)) {
 		line = read_line(fp);
 		if (line != NULL) {
@@ -243,8 +233,10 @@ static bool starts_with(const char *haystack, const char *needle)
 
 static void capitalize(char *s)
 {
+	int ch;
 	while ((*s) != '\0') {
-		*s++ = toupper(*s);
+		ch = toupper(*s);
+		*s++ = ch;
 	}
 }
 

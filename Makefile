@@ -2,32 +2,33 @@ EXE_NAME = auteur
 CC = gcc
 CFLAGS = -g -O2 -Wall -Wextra
 
-SRC_FILES = auteur.c parser.c
-OBJ_FILES = $(SRC_FILES:.c=.o)
+POSTSCRIPT_SRC = auteur_postscript.c
 
-POSTSCRIPT_HEADER = auteur_postscript.h
+SRC_FILES = auteur.c parser.c $(POSTSCRIPT_SRC)
+OBJ_FILES = $(SRC_FILES:.c=.o)
+HEADER_FILES = parser.h dimensions.h auteur_postscript.h
 
 all: $(EXE_NAME)
 
 $(EXE_NAME): $(OBJ_FILES)
 	$(CC) $(CFLAGS) -o $(EXE_NAME) $(OBJ_FILES)
 
-$(OBJ_FILES): $(SRC_FILES) $(POSTSCRIPT_HEADER) parser.h dimensions.h
+$(OBJ_FILES): $(SRC_FILES) $(POSTSCRIPT_SRC)
 	$(CC) $(CFLAGS) -c $(SRC_FILES)
 
-$(POSTSCRIPT_HEADER): auteur.ps
-	echo '#ifndef AUTEUR_POSTSCRIPT_H' > $(POSTSCRIPT_HEADER)
-	echo '#define AUTEUR_POSTSCRIPT_H' >> $(POSTSCRIPT_HEADER)
-	echo '' >> $(POSTSCRIPT_HEADER)
-	echo 'char auteur_postscript[] =' >> $(POSTSCRIPT_HEADER)
-	sed -E 's/^(\s*)(.*)$$$$/\t\1"\2\\n"/' auteur.ps >> $(POSTSCRIPT_HEADER)
-	echo ';' >> $(POSTSCRIPT_HEADER)
-	echo '' >> $(POSTSCRIPT_HEADER)
-	echo '#endif /* AUTEUR_POSTSCRIPT_H' */ >> $(POSTSCRIPT_HEADER)
+$(POSTSCRIPT_SRC): auteur.ps
+	echo '#include "auteur_postscript.h"' > $(POSTSCRIPT_SRC)
+	echo '' >> $(POSTSCRIPT_SRC)
+	echo 'const char *auteur_postscript()' >> $(POSTSCRIPT_SRC)
+	echo '{' >> $(POSTSCRIPT_SRC)
+	printf "\treturn \n" >> $(POSTSCRIPT_SRC)
+	sed -E 's/^(\s*)(.*)$$$$/\t\1"\2\\n"/' auteur.ps >> $(POSTSCRIPT_SRC)
+	echo ';' >> $(POSTSCRIPT_SRC)
+	echo '}' >> $(POSTSCRIPT_SRC)
 
 clean:
 	rm -f $(EXE_NAME)
 	rm -f *.o
-	rm $(POSTSCRIPT_HEADER)
+	rm $(POSTSCRIPT_SRC)
 
 .PHONY: all clean

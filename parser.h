@@ -38,6 +38,7 @@ struct parser {
 	const char *print_func;
 };
 
+void parser_init(struct parser *parser);
 void parser_reset_vpos(struct parser *parser);
 void parser_reset_hpos(struct parser *parser);
 void parser_newline(struct parser *parser);
