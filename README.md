@@ -1,3 +1,11 @@
+<!--
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+Copyright (c) 2021 David Jackson
+-->
+
 # Auteur: Screenwriting in Plain Text
 
 Auteur is a screenwriting program that will take a plain-text file (containing
@@ -39,10 +47,16 @@ lowercase.
 * `.Np` -- New page
 * `.% [COMMENT]` -- Comments (not printed)
 
-### Example
+### Example of a Screenplay
 
+```txt
+```
 TODO
 
 ## Building
 
 Auteur can be built with a simple `make` command.
+
+## License
+
+Auteur is licensed under the [MPL-2.0](https://www.mozilla.org/en-US/MPL/2.0/)
