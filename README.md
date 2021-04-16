@@ -50,8 +50,26 @@ lowercase.
 ### Example of a Screenplay
 
 ```txt
+.Tl My Screenplay
+.Au A. Writer
+.Np
+
+.Sl ext. field - day
+.Ac A MAN is standing in a field.
+
+.Ch Man
+.Dl How did I get here?
+
+.Tr cut to
+.Sl. int. pub - evening
+.Ac We see the Man drinking heavily.
+
+.Ch Man
+.Pa Shouting
+.Dl Best birthday ever!
+
+...
 ```
-TODO
 
 ## Building
 
