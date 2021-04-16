@@ -13,8 +13,6 @@
 static void fatal(const char *message);
 static char *read_line(FILE *fp);
 static char *parse_directive(char *line, size_t *line_len, struct parser *parser);
-static void convert_line(char *line, size_t line_len, struct parser *parser);
-static size_t next_word(const char *line, size_t start);
 static bool starts_with(const char *haystack, const char *needle);
 static void capitalize(char *s);
 static void manual_page_break();
@@ -45,7 +43,7 @@ int main(int argc, char* argv[])
 		if (line != NULL) {
 			line_len = strlen(line);
 			to_convert = parse_directive(line, &line_len, &parser);
-			convert_line(to_convert, line_len, &parser);
+			parse_line(&parser, to_convert, line_len);
 			free(line);
 		}
 	}
@@ -156,76 +154,6 @@ static char *parse_directive(char *line, size_t *len, struct parser *parser)
 	}
 
 	return line;
-}
-
-static void convert_line(char *line, size_t len, struct parser *parser)
-{
-	size_t word_len;
-	size_t start = 0;
-	double word_width;
-	size_t i;
-	double line_max_width;
-
-	if (len == 0) {
-		return;
-	}
-
-	parser_reset_hpos(parser);	
-
-	if (parser->pos.vpos - LINE_HEIGHT < MARGIN_BOTTOM) {
-		parser_newline(parser);
-	}
-
-	putchar('(');
-
-	if (parser->feat == F_PARENTHETICAL) {
-		putchar('(');
-	}
-
-	/* Print by word until line full, then newline */
-	while ((word_len = next_word(line, start)) != 0 && start < len) {
-		word_width = word_len * CHAR_WIDTH;
-		line_max_width = LINE_MAX_WIDTH;
-		if (parser->feat == F_DIALOGUE) {
-			line_max_width = DIALOG_MAX_WIDTH;
-		}
-		if (parser->pos.hpos + word_width >= line_max_width) {
-			printf(") %s\n", parser->print_func);
-			parser_newline(parser);
-			parser_reset_hpos(parser);
-			putchar('(');
-		}
-		if (parser->pos.hpos > 0.0) {
-			putchar(' ');
-			parser->pos.hpos += CHAR_WIDTH;
-		}
-		for (i = start; i < start + word_len; i++) {
-			putchar(line[i]);
-		}
-		start += word_len + 1;
-		parser->pos.hpos += word_width;
-	}
-	if (parser->feat == F_TRANSITION) {
-		putchar(':');
-	} else if (parser->feat == F_PARENTHETICAL) {
-		putchar(')');
-	}
-	
-	printf(") %s\n", parser->print_func);
-	parser_newline(parser);
-	if (parser->feat != F_CHARACTER) {
-		parser_newline(parser);
-	}
-}
-
-static size_t next_word(const char *line, size_t start)
-{
-	size_t i;
-	size_t len = 0;
-	for (i = start; line[i] != '\0' && !isspace(line[i]); i++) {
-		len++;
-	}
-	return len;
 }
 
 static bool starts_with(const char *haystack, const char *needle)

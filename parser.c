@@ -5,10 +5,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define TOP_OF_PAGE (PAGE_HEIGHT - MARGIN_TOP)
-
 #define FEATURE_BUFSIZE_MIN 20
+
+static size_t next_word(const char *line, size_t start);
 
 void parser_init(struct parser *parser)
 {
@@ -104,4 +106,74 @@ void parser_free_features(struct parser *parser)
 		free(prev->sf_buf);
 		free(prev);
 	}
+}
+
+void parse_line(struct parser *parser, char *line, size_t line_len)
+{
+	size_t word_len;
+	size_t start = 0;
+	double word_width;
+	size_t i;
+	double line_max_width;
+
+	if (line_len == 0) {
+		return;
+	}
+
+	parser_reset_hpos(parser);	
+
+	if (parser->pos.vpos - LINE_HEIGHT < MARGIN_BOTTOM) {
+		parser_newline(parser);
+	}
+
+	putchar('(');
+
+	if (parser->feat == F_PARENTHETICAL) {
+		putchar('(');
+	}
+
+	/* Print by word until line full, then newline */
+	while ((word_len = next_word(line, start)) != 0 && start < line_len) {
+		word_width = word_len * CHAR_WIDTH;
+		line_max_width = LINE_MAX_WIDTH;
+		if (parser->feat == F_DIALOGUE) {
+			line_max_width = DIALOG_MAX_WIDTH;
+		}
+		if (parser->pos.hpos + word_width >= line_max_width) {
+			printf(") %s\n", parser->print_func);
+			parser_newline(parser);
+			parser_reset_hpos(parser);
+			putchar('(');
+		}
+		if (parser->pos.hpos > 0.0) {
+			putchar(' ');
+			parser->pos.hpos += CHAR_WIDTH;
+		}
+		for (i = start; i < start + word_len; i++) {
+			putchar(line[i]);
+		}
+		start += word_len + 1;
+		parser->pos.hpos += word_width;
+	}
+	if (parser->feat == F_TRANSITION) {
+		putchar(':');
+	} else if (parser->feat == F_PARENTHETICAL) {
+		putchar(')');
+	}
+	
+	printf(") %s\n", parser->print_func);
+	parser_newline(parser);
+	if (parser->feat != F_CHARACTER) {
+		parser_newline(parser);
+	}
+}
+
+static size_t next_word(const char *line, size_t start)
+{
+	size_t i;
+	size_t len = 0;
+	for (i = start; line[i] != '\0' && !isspace(line[i]); i++) {
+		len++;
+	}
+	return len;
 }

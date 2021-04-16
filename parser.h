@@ -58,5 +58,6 @@ void parser_feature_start(struct parser *parser, enum script_feature_type featur
 void parser_feature_append_text(struct parser *parser, const char *text, size_t len);
 void parser_print_features(struct parser *parser);
 void parser_free_features(struct parser *parser);
+void parse_line(struct parser *parser, char *line, size_t line_len);
 
 #endif /* PARSER_H */
