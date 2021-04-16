@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-#include <stdbool.h>
 
 #include "auteur_postscript.h"
 #include "parser.h"
@@ -12,10 +10,6 @@
 
 static void fatal(const char *message);
 static char *read_line(FILE *fp);
-static char *parse_directive(char *line, size_t *line_len, struct parser *parser);
-static bool starts_with(const char *haystack, const char *needle);
-static void capitalize(char *s);
-static void manual_page_break();
 
 extern const char auteur_postscript[];
 
@@ -26,7 +20,6 @@ int main(int argc, char* argv[])
 	char *line;
 	struct parser parser;
 	size_t line_len;
-	char *to_convert;
 
 	parser_init(&parser);
 
@@ -42,13 +35,16 @@ int main(int argc, char* argv[])
 		line = read_line(fp);
 		if (line != NULL) {
 			line_len = strlen(line);
-			to_convert = parse_directive(line, &line_len, &parser);
-			parse_line(&parser, to_convert, line_len);
+			parse_line(&parser, line, line_len);
 			free(line);
 		}
 	}
 	fclose(fp);
+
+	parser_print_features(&parser);
 	printf("showpage\n");
+
+	parser_free_features(&parser);
 }
 
 static void fatal(const char *message)
@@ -90,88 +86,4 @@ static char *read_line(FILE *fp)
 		line[len] = '\0';
 	}
 	return line;
-}
-
-static char *parse_directive(char *line, size_t *len, struct parser *parser)
-{
-	const char *print_func;
-
-	if (starts_with(line, D_TITLE)) {
-		parser->feat = F_TITLE;
-		print_func = PRINT_TITLE;
-	} else if (starts_with(line, D_AUTHOR)) {
-		parser->feat = F_AUTHOR;
-		print_func = PRINT_CENTER;
-	} else if (starts_with(line, D_SLUG)) {
-		parser->feat = F_SLUG;
-		capitalize(line);
-		print_func = PRINT_LEFT;
-	} else if (starts_with(line, D_ACTION)) {
-		parser->feat = F_ACTION;
-		print_func = PRINT_LEFT;
-	} else if (starts_with(line, D_TRANSITION)) {
-		parser->feat = F_TRANSITION;
-		capitalize(line);
-		print_func = PRINT_RIGHT;
-	} else if (starts_with(line, D_CHARACTER)) {
-		parser->feat = F_CHARACTER;
-		capitalize(line);
-		print_func = PRINT_CENTER;
-	} else if (starts_with(line, D_PARENTHETICAL)) {
-		parser->feat = F_PARENTHETICAL;
-		print_func = PRINT_CENTER;
-	} else if (starts_with(line, D_DIALOGUE)) {
-		parser->feat = F_DIALOGUE;
-		print_func = PRINT_DIALOGUE;
-	} else if (starts_with(line, D_NEW_PAGE)) {
-		manual_page_break();
-		*len = 0;
-		return NULL;
-	} else if (starts_with(line, D_COMMENT)) {
-		while (*line != '\0') {
-			line++;
-			*len -= 1;
-		}
-		print_func = parser->print_func;
-	} else {
-		parser->feat = F_NONE;
-		print_func = parser->print_func;
-	}
-
-	parser->print_func = print_func;
-
-	if (*len < DIRECTIVE_LEN) {
-		return line;
-	}
-
-	if (parser->feat != F_NONE) {
-		line += DIRECTIVE_LEN ;
-		*len -= DIRECTIVE_LEN;
-	}
-	while (isspace(*line) && *line != '\0') {
-		line++;
-		*len = *len - 1;
-	}
-
-	return line;
-}
-
-static bool starts_with(const char *haystack, const char *needle)
-{
-	return strstr(haystack, needle) == haystack;
-}
-
-static void capitalize(char *s)
-{
-	int ch;
-	while ((*s) != '\0') {
-		ch = toupper(*s);
-		*s++ = ch;
-	}
-}
-
-static void manual_page_break()
-{
-	printf("showpage\n");
-	printf("align_start\n");
 }

@@ -25,7 +25,8 @@ enum script_feature_type {
 	F_TRANSITION,
 	F_CHARACTER,
 	F_PARENTHETICAL,
-	F_DIALOGUE
+	F_DIALOGUE,
+	F_NEW_PAGE
 };
 
 struct script_feature {
@@ -44,20 +45,13 @@ struct position {
 
 struct parser {
 	struct position pos;
-	enum script_feature_type feat;
-	const char *print_func;
 	struct script_feature *features;
 	struct script_feature *last_feature;
 };
 
 void parser_init(struct parser *parser);
-void parser_reset_vpos(struct parser *parser);
-void parser_reset_hpos(struct parser *parser);
-void parser_newline(struct parser *parser);
-void parser_feature_start(struct parser *parser, enum script_feature_type feature_type);
-void parser_feature_append_text(struct parser *parser, const char *text, size_t len);
 void parser_print_features(struct parser *parser);
-void parser_free_features(struct parser *parser);
 void parse_line(struct parser *parser, char *line, size_t line_len);
+void parser_free_features(struct parser *parser);
 
 #endif /* PARSER_H */

@@ -6,18 +6,28 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 #define TOP_OF_PAGE (PAGE_HEIGHT - MARGIN_TOP)
 #define FEATURE_BUFSIZE_MIN 20
 
+static void parser_reset_vpos(struct parser *parser);
+static void parser_reset_hpos(struct parser *parser);
+static void parser_newline(struct parser *parser);
+static void parser_feature_append_text(struct parser *parser, const char *text, size_t len);
 static size_t next_word(const char *line, size_t start);
+static bool starts_with(const char *haystack, const char *needle);
+static void capitalize(char *s);
+static void print_script_feature(struct parser *parser, struct script_feature *feat);
+static char *parse_directive(struct parser *parser, char *line, size_t *len);
+static void manual_page_break();
+static void parser_feature_start(struct parser *parser, enum script_feature_type feature_type);
+static const char *script_feature_print_function(enum script_feature_type feat_type);
 
 void parser_init(struct parser *parser)
 {
 	parser->pos.page_num = 1;
 	parser_reset_vpos(parser);
-	parser->feat = F_NONE;
-	parser->print_func = PRINT_LEFT;
 	parser->features = NULL;
 	parser->last_feature = NULL;
 }
@@ -92,7 +102,7 @@ void parser_print_features(struct parser *parser)
 {
 	struct script_feature *curr;
 	for (curr = parser->features; curr != NULL; curr = curr->next) {
-		/* TODO */
+		print_script_feature(parser, curr);
 	}
 }
 
@@ -110,61 +120,16 @@ void parser_free_features(struct parser *parser)
 
 void parse_line(struct parser *parser, char *line, size_t line_len)
 {
-	size_t word_len;
-	size_t start = 0;
-	double word_width;
-	size_t i;
-	double line_max_width;
-
+	char *text;
+	size_t text_len = line_len;
+	
 	if (line_len == 0) {
 		return;
 	}
 
-	parser_reset_hpos(parser);	
-
-	if (parser->pos.vpos - LINE_HEIGHT < MARGIN_BOTTOM) {
-		parser_newline(parser);
-	}
-
-	putchar('(');
-
-	if (parser->feat == F_PARENTHETICAL) {
-		putchar('(');
-	}
-
-	/* Print by word until line full, then newline */
-	while ((word_len = next_word(line, start)) != 0 && start < line_len) {
-		word_width = word_len * CHAR_WIDTH;
-		line_max_width = LINE_MAX_WIDTH;
-		if (parser->feat == F_DIALOGUE) {
-			line_max_width = DIALOG_MAX_WIDTH;
-		}
-		if (parser->pos.hpos + word_width >= line_max_width) {
-			printf(") %s\n", parser->print_func);
-			parser_newline(parser);
-			parser_reset_hpos(parser);
-			putchar('(');
-		}
-		if (parser->pos.hpos > 0.0) {
-			putchar(' ');
-			parser->pos.hpos += CHAR_WIDTH;
-		}
-		for (i = start; i < start + word_len; i++) {
-			putchar(line[i]);
-		}
-		start += word_len + 1;
-		parser->pos.hpos += word_width;
-	}
-	if (parser->feat == F_TRANSITION) {
-		putchar(':');
-	} else if (parser->feat == F_PARENTHETICAL) {
-		putchar(')');
-	}
-	
-	printf(") %s\n", parser->print_func);
-	parser_newline(parser);
-	if (parser->feat != F_CHARACTER) {
-		parser_newline(parser);
+	text = parse_directive(parser, line, &text_len);
+	if (text_len > 0) {
+		parser_feature_append_text(parser, text, text_len);
 	}
 }
 
@@ -176,4 +141,162 @@ static size_t next_word(const char *line, size_t start)
 		len++;
 	}
 	return len;
+}
+
+static char *parse_directive(struct parser *parser, char *line, size_t *len)
+{
+	enum script_feature_type feat_type;
+
+	if (starts_with(line, D_TITLE)) {
+		feat_type = F_TITLE;
+	} else if (starts_with(line, D_AUTHOR)) {
+		feat_type = F_AUTHOR;
+	} else if (starts_with(line, D_SLUG)) {
+		feat_type = F_SLUG;
+	} else if (starts_with(line, D_ACTION)) {
+		feat_type = F_ACTION;
+	} else if (starts_with(line, D_TRANSITION)) {
+		feat_type = F_TRANSITION;
+	} else if (starts_with(line, D_CHARACTER)) {
+		feat_type = F_CHARACTER;
+	} else if (starts_with(line, D_PARENTHETICAL)) {
+		feat_type = F_PARENTHETICAL;
+	} else if (starts_with(line, D_DIALOGUE)) {
+		feat_type = F_DIALOGUE;
+	} else if (starts_with(line, D_NEW_PAGE)) {
+		feat_type = F_NEW_PAGE;
+		*len = 0;
+		return NULL;
+	} else if (starts_with(line, D_COMMENT)) {
+		while (*line != '\0') {
+			line++;
+			*len -= 1;
+		}
+		feat_type = F_NONE;
+	} else {
+		feat_type = F_NONE;
+	}
+
+	if (*len < DIRECTIVE_LEN) {
+		return line;
+	}
+
+	if (feat_type != F_NONE) {
+		line += DIRECTIVE_LEN ;
+		*len -= DIRECTIVE_LEN;
+		parser_feature_start(parser, feat_type);
+	}
+	while (isspace(*line) && *line != '\0') {
+		line++;
+		*len = *len - 1;
+	}
+
+	return line;
+}
+
+static bool starts_with(const char *haystack, const char *needle)
+{
+	return strstr(haystack, needle) == haystack;
+}
+
+static void capitalize(char *s)
+{
+	int ch;
+	while ((*s) != '\0') {
+		ch = toupper(*s);
+		*s++ = ch;
+	}
+}
+
+static void print_script_feature(struct parser *parser, struct script_feature *feat)
+{
+	double line_max_width;
+	size_t i;
+	double word_width;
+	size_t word_len;
+	size_t start = 0;
+	char *text = feat->sf_buf;
+	size_t text_len = feat->sf_len;
+	const char *print_func = script_feature_print_function(feat->sf_type);
+
+	if (feat->sf_type == F_NEW_PAGE) {
+		manual_page_break();
+	}
+
+	parser_reset_hpos(parser);	
+
+	if (parser->pos.vpos - LINE_HEIGHT < MARGIN_BOTTOM) {
+		parser_newline(parser);
+	}
+
+	putchar('(');
+
+	if (feat->sf_type == F_PARENTHETICAL) {
+		putchar('(');
+	}
+
+	/* Print by word until line full, then newline */
+	while ((word_len = next_word(text, start)) != 0 && start < text_len) {
+		word_width = word_len * CHAR_WIDTH;
+		line_max_width = LINE_MAX_WIDTH;
+		if (feat->sf_type == F_DIALOGUE) {
+			line_max_width = DIALOG_MAX_WIDTH;
+		}
+		if (parser->pos.hpos + word_width >= line_max_width) {
+			printf(") %s\n", print_func);
+			parser_newline(parser);
+			parser_reset_hpos(parser);
+			putchar('(');
+		}
+		if (parser->pos.hpos > 0.0) {
+			putchar(' ');
+			parser->pos.hpos += CHAR_WIDTH;
+		}
+		for (i = start; i < start + word_len; i++) {
+			putchar(text[i]);
+		}
+		start += word_len + 1;
+		parser->pos.hpos += word_width;
+	}
+	if (feat->sf_type == F_TRANSITION) {
+		putchar(':');
+	} else if (feat->sf_type == F_PARENTHETICAL) {
+		putchar(')');
+	}
+	
+	printf(") %s\n", print_func);
+	parser_newline(parser);
+	if (feat->sf_type != F_CHARACTER) {
+		parser_newline(parser);
+	}
+}
+
+static void manual_page_break()
+{
+	printf("showpage\n");
+	printf("align_start\n");
+}
+
+static const char *script_feature_print_function(enum script_feature_type feat_type)
+{
+	switch (feat_type) {
+		case F_TITLE:
+			return PRINT_TITLE;
+		case F_AUTHOR:
+			return PRINT_CENTER;
+		case F_SLUG:
+			return PRINT_LEFT;
+		case F_ACTION:
+			return PRINT_LEFT;
+		case F_TRANSITION:
+			return PRINT_RIGHT;
+		case F_CHARACTER:
+			return PRINT_CENTER;
+		case F_PARENTHETICAL:
+			return PRINT_CENTER;
+		case F_DIALOGUE:
+			return PRINT_DIALOGUE;
+		default:
+			return PRINT_LEFT;
+	}
 }
