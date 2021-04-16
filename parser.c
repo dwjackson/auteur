@@ -79,6 +79,8 @@ void parser_feature_start(struct parser *parser, enum script_feature_type featur
 
 	if (parser->features == NULL) {
 		parser->features = feature;
+	} else {
+		parser->last_feature->next = feature;
 	}
 	parser->last_feature = feature;
 }
@@ -168,8 +170,6 @@ static char *parse_directive(struct parser *parser, char *line, size_t *len)
 		feat_type = F_DIALOGUE;
 	} else if (starts_with(line, D_NEW_PAGE)) {
 		feat_type = F_NEW_PAGE;
-		*len = 0;
-		return NULL;
 	} else if (starts_with(line, D_COMMENT)) {
 		while (*line != '\0') {
 			line++;
@@ -222,11 +222,12 @@ static void print_script_feature(struct parser *parser, struct script_feature *f
 	size_t text_len = feat->sf_len;
 	const char *print_func = script_feature_print_function(feat->sf_type);
 
+	parser_reset_hpos(parser);	
+
 	if (feat->sf_type == F_NEW_PAGE) {
 		manual_page_break();
+		return;
 	}
-
-	parser_reset_hpos(parser);	
 
 	if (parser->pos.vpos - LINE_HEIGHT < MARGIN_BOTTOM) {
 		parser_newline(parser);
