@@ -96,6 +96,9 @@ void parser_feature_append_text(struct parser *parser, const char *text, size_t 
 	strncat(feat->sf_buf, text, len);
 	feat->sf_len += len;
 	feat->sf_buf[feat->sf_len] = '\0';
+	if (feat->sf_type == F_SLUG || feat->sf_type == F_TRANSITION || feat->sf_type == F_CHARACTER) {
+		capitalize(feat->sf_buf);
+	}
 }
 
 void parser_print_features(struct parser *parser)
