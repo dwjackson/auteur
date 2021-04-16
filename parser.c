@@ -181,7 +181,7 @@ static char *parse_directive(struct parser *parser, char *line, size_t *len)
 	}
 
 	if (*len < DIRECTIVE_LEN) {
-		return line;
+		feat_type = F_NONE;
 	}
 
 	if (feat_type != F_NONE) {
@@ -192,6 +192,11 @@ static char *parse_directive(struct parser *parser, char *line, size_t *len)
 	while (isspace(*line) && *line != '\0') {
 		line++;
 		*len = *len - 1;
+	}
+
+	if (feat_type == F_NONE && *len > 0 && parser->last_feature != NULL && parser->last_feature->sf_len > 0) {
+		/* Append a space because there was a new line */
+		parser_feature_append_text(parser, " ", 1);
 	}
 
 	return line;
