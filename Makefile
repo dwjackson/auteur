@@ -27,6 +27,6 @@ $(POSTSCRIPT_SRC): auteur.ps
 clean:
 	rm -f $(EXE_NAME)
 	rm -f *.o
-	rm $(POSTSCRIPT_SRC)
+	rm -f $(POSTSCRIPT_SRC)
 
 .PHONY: all clean
