@@ -6,7 +6,7 @@
 
 EXE_NAME = auteur
 CC = gcc
-OPTIMIZATION_LEVEL = 0
+OPTIMIZATION_LEVEL = 2
 CFLAGS = -g -O$(OPTIMIZATION_LEVEL) -Wall -Wextra
 
 POSTSCRIPT_SRC = auteur_postscript.c
