@@ -38,7 +38,6 @@ int main(int argc, char* argv[])
 			fatal(file_name);
 		}
 	}
-	printf("%s\n", auteur_postscript);
 	while (!feof(fp)) {
 		line = read_line(fp);
 		if (line != NULL) {
@@ -49,6 +48,8 @@ int main(int argc, char* argv[])
 	}
 	fclose(fp);
 
+	/* Print the ccreenplay */
+	printf("%s\n", auteur_postscript);
 	parser_print_features(&parser);
 	printf("showpage\n");
 
