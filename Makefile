@@ -27,7 +27,7 @@ $(POSTSCRIPT_SRC): auteur.ps
 	echo '#include "auteur_postscript.h"' > $(POSTSCRIPT_SRC)
 	echo '' >> $(POSTSCRIPT_SRC)
 	echo 'const char auteur_postscript[] = ' >> $(POSTSCRIPT_SRC)
-	sed -E 's/^(\s*)(.*)$$$$/\t\1"\2\\n"/' auteur.ps >> $(POSTSCRIPT_SRC)
+	sed '2,7d' auteur.ps | sed -E 's/^(\s*)(.*)$$$$/\t\1"\2\\n"/' >> $(POSTSCRIPT_SRC)
 	echo ';' >> $(POSTSCRIPT_SRC)
 
 clean:
