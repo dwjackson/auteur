@@ -253,7 +253,7 @@ static void print_script_feature(struct parser *parser, struct script_feature *f
 	}
 
 	/* Print by word until line full, then newline */
-	while ((word_len = next_word(text, start)) != 0 && start < text_len) {
+	while (start < text_len && (word_len = next_word(text, start)) != 0) {
 		word_width = word_len * CHAR_WIDTH;
 		line_max_width = LINE_MAX_WIDTH;
 		if (feat->sf_type == F_DIALOGUE) {
