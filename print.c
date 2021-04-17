@@ -1,21 +1,19 @@
 #include "print.h"
-#include "parser.h"
+#include "script_feature.h"
 #include "dimensions.h"
 #include "auteur_postscript.h"
+#include "position.h"
 
 #include <stdio.h>
 #include <ctype.h>
 
-#define TOP_OF_PAGE (PAGE_HEIGHT - MARGIN_TOP)
-
-static void reset_vpos(struct parser *parser);
-static void reset_hpos(struct parser *parser);
+static void reset_hpos(struct position *pos);
 static size_t next_word(const char *line, size_t start);
-static void newline(struct parser *parser);
+static void newline(struct position *pos);
 static void manual_page_break();
 static const char *script_feature_print_function(enum script_feature_type feat_type);
 
-void print_script_feature(struct parser *parser, struct script_feature *feat)
+void print_script_feature(struct position *pos, struct script_feature *feat)
 {
 	double line_max_width;
 	size_t i;
@@ -26,15 +24,15 @@ void print_script_feature(struct parser *parser, struct script_feature *feat)
 	size_t text_len = feat->sf_len;
 	const char *print_func = script_feature_print_function(feat->sf_type);
 
-	reset_hpos(parser);	
+	reset_hpos(pos);	
 
 	if (feat->sf_type == F_NEW_PAGE) {
 		manual_page_break();
 		return;
 	}
 
-	if (parser->pos.vpos - LINE_HEIGHT < MARGIN_BOTTOM) {
-		newline(parser);
+	if (pos->vpos - LINE_HEIGHT < MARGIN_BOTTOM) {
+		newline(pos);
 	}
 
 	putchar('(');
@@ -50,21 +48,21 @@ void print_script_feature(struct parser *parser, struct script_feature *feat)
 		if (feat->sf_type == F_DIALOGUE) {
 			line_max_width = DIALOG_MAX_WIDTH;
 		}
-		if (parser->pos.hpos + word_width >= line_max_width) {
+		if (pos->hpos + word_width >= line_max_width) {
 			printf(") %s\n", print_func);
-			newline(parser);
-			reset_hpos(parser);
+			newline(pos);
+			reset_hpos(pos);
 			putchar('(');
 		}
-		if (parser->pos.hpos > 0.0) {
+		if (pos->hpos > 0.0) {
 			putchar(' ');
-			parser->pos.hpos += CHAR_WIDTH;
+			pos->hpos += CHAR_WIDTH;
 		}
 		for (i = start; i < start + word_len; i++) {
 			putchar(text[i]);
 		}
 		start += word_len + 1;
-		parser->pos.hpos += word_width;
+		pos->hpos += word_width;
 	}
 	if (feat->sf_type == F_TRANSITION) {
 		putchar(':');
@@ -73,9 +71,9 @@ void print_script_feature(struct parser *parser, struct script_feature *feat)
 	}
 	
 	printf(") %s\n", print_func);
-	newline(parser);
+	newline(pos);
 	if (feat->sf_type != F_CHARACTER) {
-		newline(parser);
+		newline(pos);
 	}
 }
 
@@ -119,29 +117,24 @@ static size_t next_word(const char *line, size_t start)
 	return len;
 }
 
-void reset_vpos(struct parser *parser)
+void reset_hpos(struct position *pos)
 {
-	parser->pos.vpos = TOP_OF_PAGE;
+	pos->hpos = 0.0;
 }
 
-void reset_hpos(struct parser *parser)
+void newline(struct position *pos)
 {
-	parser->pos.hpos = 0.0;
-}
-
-void newline(struct parser *parser)
-{
-	parser->pos.vpos -= LINE_HEIGHT;
-	if (parser->pos.vpos >= MARGIN_BOTTOM) {
+	pos->vpos -= LINE_HEIGHT;
+	if (pos->vpos >= MARGIN_BOTTOM) {
 		printf("newline\n");
 	} else {
 		/* We are at the end of the page */
-		reset_vpos(parser);
-		parser->pos.page_num++;
+		position_reset_vpos(pos);
+		pos->page_num++;
 
 		printf("showpage\n");
-		if (parser->pos.page_num > 1) {
-			printf("(%d.) print_page_number\n", parser->pos.page_num);
+		if (pos->page_num > 1) {
+			printf("(%d.) print_page_number\n", pos->page_num);
 		}
 		printf("align_start\n");
 	}

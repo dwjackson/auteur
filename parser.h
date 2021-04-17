@@ -9,6 +9,8 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include "script_feature.h"
+
 #include <stdlib.h>
 
 /* Directives */
@@ -24,35 +26,7 @@
 #define D_NEW_PAGE ".Np"
 #define D_COMMENT ".\\%"
 
-enum script_feature_type {
-	F_NONE,
-	F_TITLE,
-	F_AUTHOR,
-	F_SLUG,
-	F_ACTION,
-	F_TRANSITION,
-	F_CHARACTER,
-	F_PARENTHETICAL,
-	F_DIALOGUE,
-	F_NEW_PAGE
-};
-
-struct script_feature {
-	enum script_feature_type sf_type;
-	char *sf_buf;
-	size_t sf_size;
-	size_t sf_len;
-	struct script_feature *next;
-};
-
-struct position {
-	double hpos;
-	double vpos;
-	int page_num;
-};
-
 struct parser {
-	struct position pos;
 	struct script_feature *features;
 	struct script_feature *last_feature;
 };

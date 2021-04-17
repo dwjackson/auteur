@@ -10,6 +10,7 @@
 #include "dimensions.h"
 #include "auteur_postscript.h"
 #include "print.h"
+#include "position.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,7 +28,6 @@ static void parser_feature_start(struct parser *parser, enum script_feature_type
 
 void parser_init(struct parser *parser)
 {
-	parser->pos.page_num = 1;
 	parser->features = NULL;
 	parser->last_feature = NULL;
 }
@@ -78,8 +78,10 @@ void parser_feature_append_text(struct parser *parser, const char *text, size_t 
 void parser_print_features(struct parser *parser)
 {
 	struct script_feature *curr;
+	struct position pos;
+	position_init(&pos);
 	for (curr = parser->features; curr != NULL; curr = curr->next) {
-		print_script_feature(parser, curr);
+		print_script_feature(&pos, curr);
 	}
 }
 

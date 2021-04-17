@@ -9,8 +9,9 @@
 #ifndef PRINT_H
 #define PRINT_H
 
-#include "parser.h"
+#include "position.h"
+#include "script_feature.h"
 
-void print_script_feature(struct parser *parser, struct script_feature *feat);
+void print_script_feature(struct position *pos, struct script_feature *feat);
 
 #endif /* PRINT_H */
