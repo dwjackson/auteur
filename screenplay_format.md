@@ -33,12 +33,14 @@ Copyright (c) 2021 David Jackson
 	* The location
 	* Time of day, after a dash ("-")
 * Dialogue
-	* Centered
+	* Centered (roughly)
 	* Character ID/name
 		* Extension (how the dialogue is heard)
+		* 3.7 inches from the left edge of the page; 1.6in from margin
 	* Parenthetical (how the dialogue is delivered)
+		* 3.1 inches from left of the page; 2.2in from the margin
 	* Words spoken
-	* 2.5" from left of page--i.e. left margin + 1"
+	* Spoken dialog is 3.7in from left of page--i.e. left margin + 1.5in
 * Transitions
 	* Right-justified, between two scenes
 	* Followed by a colon (":")

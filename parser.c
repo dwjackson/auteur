@@ -308,9 +308,9 @@ static const char *script_feature_print_function(enum script_feature_type feat_t
 		case F_TRANSITION:
 			return PRINT_RIGHT;
 		case F_CHARACTER:
-			return PRINT_CENTER;
+			return PRINT_SPEAKER;
 		case F_PARENTHETICAL:
-			return PRINT_CENTER;
+			return PRINT_PARENTHETICAL;
 		case F_DIALOGUE:
 			return PRINT_DIALOGUE;
 		default:

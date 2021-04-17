@@ -15,5 +15,7 @@
 #define PRINT_CENTER "print_center"
 #define PRINT_TITLE "print_title"
 #define PRINT_DIALOGUE "print_dialogue"
+#define PRINT_PARENTHETICAL "print_parenthetical"
+#define PRINT_SPEAKER "print_speaker"
 
 #endif /* AUTEUR_POSTSCRIPT_H */

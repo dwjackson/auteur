@@ -31,7 +31,11 @@
 	/vpos exch def } bind def
 /align_center { /hpos page_mid def } bind def
 /align_right { /hpos margin_right def } bind def
-/align_dialogue { 1.0 72.0 mul margin_left add
+/align_speaker { 2.2 72.0 mul margin_left add
+	/hpos exch def } bind def
+/align_parenthetical { 1.6 72.0 mul margin_left add
+	/hpos exch def } bind def
+/align_dialogue { 1.5 72.0 mul margin_left add
 	/hpos exch def } bind def
 
 % Text Printing
@@ -67,6 +71,12 @@
 	/hpos exch def
 	0.5 72.0 mul page_top exch sub
 	/vpos exch def
+	hpos vpos moveto
+	show } bind def
+/print_speaker { align_speaker
+	hpos vpos moveto
+	show } bind def
+/print_parenthetical { align_parenthetical
 	hpos vpos moveto
 	show } bind def
 
