@@ -11,16 +11,16 @@ CFLAGS = -g -O$(OPTIMIZATION_LEVEL) -Wall -Wextra
 
 POSTSCRIPT_SRC = auteur_postscript.c
 
-SRC_FILES = auteur.c parser.c $(POSTSCRIPT_SRC)
+SRC_FILES = auteur.c parser.c $(POSTSCRIPT_SRC) print.c
 OBJ_FILES = $(SRC_FILES:.c=.o)
-HEADER_FILES = parser.h dimensions.h auteur_postscript.h
+HEADER_FILES = parser.h dimensions.h auteur_postscript.h print.h
 
 all: $(EXE_NAME)
 
 $(EXE_NAME): $(OBJ_FILES)
 	$(CC) $(CFLAGS) -o $(EXE_NAME) $(OBJ_FILES)
 
-$(OBJ_FILES): $(SRC_FILES) $(POSTSCRIPT_SRC)
+$(OBJ_FILES): $(SRC_FILES) $(POSTSCRIPT_SRC) $(HEADER_FILES)
 	$(CC) $(CFLAGS) -c $(SRC_FILES)
 
 $(POSTSCRIPT_SRC): auteur.ps
