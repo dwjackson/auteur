@@ -17,8 +17,11 @@
 
 % Margins
 /margin_left { 1.5 72.0 mul } bind def
-/margin_top 72 def
-/margin_right { 1.0 72.0 mul page_width exch sub } bind def
+/margin_top 72.0 def
+/margin_right { page_width 72.0 sub } bind def
+/margin_dialogue { 2.5 72.0 mul } bind def
+/margin_speaker { 4.0 72 mul } bind def
+/margin_page_number { 0.75 72 mul page_width exch sub } bind def
 
 % Position in Page
 /hpos margin_left def
@@ -31,12 +34,10 @@
 	/vpos exch def } bind def
 /align_center { /hpos page_mid def } bind def
 /align_right { /hpos margin_right def } bind def
-/align_speaker { 2.2 72.0 mul margin_left add
+/align_speaker { /hpos margin_speaker def } bind def
+/align_parenthetical { margin_speaker 0.5 sub
 	/hpos exch def } bind def
-/align_parenthetical { 1.6 72.0 mul margin_left add
-	/hpos exch def } bind def
-/align_dialogue { 1.5 72.0 mul margin_left add
-	/hpos exch def } bind def
+/align_dialogue { /hpos margin_dialogue def } bind def
 
 % Text Printing
 /print_left { align_left
@@ -67,7 +68,7 @@
 	print_center } bind def
 /print_page_number { dup
 	stringwidth pop
-	page_width exch sub
+	margin_page_number exch sub
 	/hpos exch def
 	0.5 72.0 mul page_top exch sub
 	/vpos exch def

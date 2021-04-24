@@ -10,16 +10,20 @@ Copyright (c) 2021 David Jackson
 
 ## General Formatting
 
-* Font: Courier, 12pt
+* Font: Courier, 12pt; 10 pitch
 * Margins
-	* Left: 1.5"
-	* Right: 1"
-	* Top/Bottom: 1"
-* ~55 lines per page
+	* Left: 1.5in
+	* Right: 1.0in
+	* Top: 1.0in
+	* Bottom: 0.5-1.5in, depending on page-break
 * Page Numbering
-	* top-right corner, flush to right margin, 0.5" from top
-	* followed by a period (".")
-	* title page and first page not numbered
+	* Top-right corner
+	* Followed by a period (".")
+	* Title page and first page not numbered--i.e. start at 2
+	* Margins:
+		* Top: 0.5in
+		* Right: 0.75in
+* ~55 lines per page
 * Transitions capitalized
 * Capitalization
 	* Character names on first occurrence
@@ -32,17 +36,25 @@ Copyright (c) 2021 David Jackson
 	* Interior ("INT.") or Exterior ("EXT.")
 	* The location
 	* Time of day, after a dash ("-")
+	* All-caps
 * Dialogue
-	* Centered (roughly)
+	* Dialogue:
+		* Left-Margin: 2.5in
+		* Width: ~3.5in
+		* Words spoken
+		* Page breaks in the middle of dialogue followed by
+		  parenthetical "(MORE") on its own line, centered; next
+		  dialogue has "(CONT'D)" in the "extension"
 	* Character ID/name
-		* Extension (how the dialogue is heard)
-		* 3.7 inches from the left edge of the page; 1.6in from margin
+		* Optional: Extension (how the dialogue is heard)
+		* All-caps
+		* Left-Margin: 4.0in - 4.2in
 	* Parenthetical (how the dialogue is delivered)
-		* 3.1 inches from left of the page; 2.2in from the margin
-	* Words spoken
-	* Spoken dialog is 3.7in from left of page--i.e. left margin + 1.5in
+		* Left-Margin: 0.5in left of character name
+		* Width: 1.5in; wrap to following line
 * Transitions
 	* Right-justified, between two scenes
 	* Followed by a colon (":")
 * Actions
 	* Left-jusified, sentence-case
+	* At their first introduction, a character's name is all-caps
