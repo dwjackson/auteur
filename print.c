@@ -52,9 +52,12 @@ void print_script_feature(struct position *pos, struct script_feature *feat)
 	/* Print by word until line full, then newline */
 	while (start < text_len && (word_len = next_word(text, start)) != 0) {
 		word_width = word_len * CHAR_WIDTH;
-		line_max_width = LINE_MAX_WIDTH;
 		if (feat->sf_type == F_DIALOGUE) {
-			line_max_width = DIALOG_MAX_WIDTH;
+			line_max_width = DIALOGUE_MAX_WIDTH;
+		} else if (feat->sf_type == F_PARENTHETICAL) {
+			line_max_width = PARENTHETICAL_MAX_WIDTH;
+		} else {
+			line_max_width = LINE_MAX_WIDTH;
 		}
 		if (pos->hpos + word_width >= line_max_width) {
 			printf(") %s\n", print_func);
