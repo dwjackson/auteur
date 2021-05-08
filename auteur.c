@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
 	}
 	fclose(fp);
 
-	/* Print the ccreenplay */
+	/* Print the screenplay */
 	printf("%s\n", auteur_postscript);
 	parser_print_features(&parser);
 	printf("showpage\n");
